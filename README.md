@@ -9,7 +9,7 @@ AWS Glue Data Catalog y consultas con Amazon Athena.
 - AWS CLI v2, versión 2.32.0 o posterior, instalada y autenticada en esa cuenta.
 - Identidad con los permisos necesarios para crear y eliminar los recursos del
   laboratorio. No usamos el usuario raíz.
-- Terraform instalado.
+- Terraform 1.7 o posterior instalado.
 
 La guía de preparación está publicada en **https://utn.almorgan.dev**.
 Allí están las instrucciones de instalación,
@@ -54,5 +54,30 @@ consola antes de continuar:
 
 ## Estado del repositorio
 
-Base inicial del taller. La infraestructura Terraform, los SQL y las instrucciones
-de cada etapa todavía están pendientes de implementación.
+La [etapa 01 · Aurora PostgreSQL](docs/01-aurora.md) incluye la infraestructura
+Terraform, los datos de ejemplo y las consultas por Data API. Empezá por esa guía.
+Las etapas de S3, DMS, Glue y Athena están pendientes.
+
+```text
+infra/              Infraestructura del laboratorio y lockfile del provider
+infra/tests/        Comprobaciones de Terraform con AWS simulado
+sql/                Esquema, datos ficticios y consultas
+docs/01-aurora.md    Pasos del participante y limpieza
+```
+
+Para validar Terraform sin crear recursos (después de `terraform -chdir=infra init`):
+
+```sh
+terraform -chdir=infra fmt -check -recursive
+terraform -chdir=infra validate
+terraform -chdir=infra test
+```
+
+Las pruebas usan un provider simulado; no prueban la creación real de Aurora,
+los permisos de una cuenta ni la ejecución de Data API. El ensayo completo en
+una cuenta de laboratorio sigue siendo necesario antes del workshop.
+
+La creación del esquema, la carga repetida, las claves, las restricciones y los
+totales de las consultas se comprobaron con PostgreSQL embebido (PGlite 0.5.12,
+PostgreSQL 18.6). Esa comprobación local no sustituye la prueba en Aurora 16.13
+ni valida los parámetros específicos de RDS del archivo `04-verificar.sql`.
