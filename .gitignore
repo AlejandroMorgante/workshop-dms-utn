@@ -1,0 +1,22 @@
+# Terraform working directories, state, and saved plans.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Participant-specific configuration and credentials.
+*.tfvars
+*.tfvars.json
+.env
+.env.*
+!.env.example
+.aws/
+*.pem
+*.key
+
+# Local editor and operating-system files.
+.DS_Store
+.idea/
+.vscode/
