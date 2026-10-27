@@ -37,28 +37,29 @@ terraform version
 Necesitás Terraform **1.7 o posterior**. El repositorio fija el provider AWS 6.70
 y conserva `.terraform.lock.hcl` para repetir la misma selección.
 
-Copiá `infra/terraform.tfvars.example` como `infra/terraform.tfvars` y reemplazá
+Copiá `infra/01-aurora/terraform.tfvars.example` como `infra/01-aurora/terraform.tfvars` y reemplazá
 `expected_account_id` por el campo `Account` que devolvió la CLI. Si usás otro
 perfil, cambiá `aws_profile` y los `--profile workshop` de los comandos de la guía.
 El archivo de variables está excluido de Git.
 
 ```sh
-terraform -chdir=infra init
-terraform -chdir=infra plan
+terraform -chdir=infra/01-aurora init
+terraform -chdir=infra/01-aurora plan
 ```
 
 `init` descarga el provider; `plan` consulta AWS y muestra qué crearía. Todavía no
 crea la base. Revisá los recursos con prefijo `utn-dms`. El provider rechaza una
 cuenta distinta de `expected_account_id`.
 
-Usaremos **una sola carpeta `infra/` y un solo estado** durante todo el workshop.
-Las siguientes etapas agregan recursos; no borres el estado ni vuelvas a crear
-Aurora para avanzar.
+Esta etapa usa el stack **`infra/01-aurora/`**, con su propio estado Terraform.
+Incluye Aurora y la red necesaria para alojarla. Las siguientes etapas tendrán
+sus propias carpetas y estados, y consumirán los outputs que necesiten de este
+stack. Conservá su estado y la base mientras avanzás por el workshop.
 
 ## 2. Crear y reconocer los recursos
 
 ```sh
-terraform -chdir=infra apply
+terraform -chdir=infra/01-aurora apply
 ```
 
 Revisá el plan y confirmá con `yes`. La creación puede demorar varios minutos.
@@ -89,7 +90,7 @@ del cluster, el ARN del secreto y el nombre de la base; no contiene una contrase
 ```sh
 export AWS_CLI_FILE_ENCODING=UTF-8
 mkdir -p .local
-terraform -chdir=infra output -raw data_api_request > .local/aurora.json
+terraform -chdir=infra/01-aurora output -raw data_api_request > .local/aurora.json
 ```
 
 **Windows · PowerShell:**
@@ -97,7 +98,7 @@ terraform -chdir=infra output -raw data_api_request > .local/aurora.json
 ```powershell
 $env:AWS_CLI_FILE_ENCODING = "UTF-8"
 New-Item -ItemType Directory -Force .local | Out-Null
-terraform -chdir=infra output -raw data_api_request | Set-Content -Encoding ascii .local/aurora.json
+terraform -chdir=infra/01-aurora output -raw data_api_request | Set-Content -Encoding ascii .local/aurora.json
 ```
 
 En los próximos comandos, `--cli-input-json` aporta esos tres datos y `--sql`
@@ -201,8 +202,8 @@ CDC hasta que la tarea esté lista.
 Si vas a continuar ahora con S3 y DMS, conservá la base. Si terminaste la sesión:
 
 ```sh
-terraform -chdir=infra plan -destroy
-terraform -chdir=infra destroy
+terraform -chdir=infra/01-aurora plan -destroy
+terraform -chdir=infra/01-aurora destroy
 ```
 
 **La limpieza borra los datos del laboratorio y no crea un snapshot final.**
@@ -210,6 +211,9 @@ Revisá el plan y confirmá únicamente los recursos de este workshop. RDS elimi
 también el secreto administrado al eliminar el cluster. Si agregaste recursos
 fuera de Terraform, revisalos por separado. Conservá el estado hasta completar
 la limpieza y verificá en la consola que cluster y writer ya no existan.
+
+Cuando existan stacks posteriores que dependan de esta VPC o de Aurora, eliminá
+primero esos stacks. La limpieza de `01-aurora` queda al final del recorrido.
 
 ## Referencias
 

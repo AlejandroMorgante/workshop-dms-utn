@@ -59,18 +59,24 @@ Terraform, los datos de ejemplo y las consultas por Data API. Empezá por esa gu
 Las etapas de S3, DMS, Glue y Athena están pendientes.
 
 ```text
-infra/              Infraestructura del laboratorio y lockfile del provider
-infra/tests/        Comprobaciones de Terraform con AWS simulado
+infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
+  tests/            Comprobaciones de Terraform con AWS simulado
 sql/                Esquema, datos ficticios y consultas
 docs/01-aurora.md    Pasos del participante y limpieza
 ```
 
-Para validar Terraform sin crear recursos (después de `terraform -chdir=infra init`):
+Cada stack es una carpeta raíz de Terraform con su propio estado. Así podemos
+crear una etapa, explorar sus recursos y recién después desplegar la siguiente.
+La separación prevista es `01-aurora`, `02-s3` y `03-dms`; por ahora solo está
+implementado el primero. Las etapas posteriores recibirán los outputs de las
+anteriores, y la limpieza se hará en orden inverso a sus dependencias.
+
+Para validar Terraform sin crear recursos (después de `terraform -chdir=infra/01-aurora init`):
 
 ```sh
-terraform -chdir=infra fmt -check -recursive
-terraform -chdir=infra validate
-terraform -chdir=infra test
+terraform -chdir=infra/01-aurora fmt -check -recursive
+terraform -chdir=infra/01-aurora validate
+terraform -chdir=infra/01-aurora test
 ```
 
 Las pruebas usan un provider simulado; no prueban la creación real de Aurora,
