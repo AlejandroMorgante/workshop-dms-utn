@@ -21,3 +21,9 @@ output "connection_tests" {
     target = { ReplicationInstanceArn = aws_dms_replication_instance.workshop.replication_instance_arn, EndpointArn = aws_dms_s3_endpoint.target.endpoint_arn }
   } : {}
 }
+
+output "workshop_context" {
+  value = { account_id = var.expected_account_id, region = var.aws_region }
+}
+output "target_data_uri" { value = "s3://${local.storage.bucket_name}/${local.storage.dms_prefix}/" }
+output "task_log_group_name" { value = aws_cloudwatch_log_group.tasks.name }

@@ -46,6 +46,15 @@ variables {
 run "infrastructure_before_credentials" {
   command = plan
   assert {
+    condition = (
+      aws_cloudwatch_log_group.tasks.name == "dms-tasks-utn-dms-replication" &&
+      aws_cloudwatch_log_group.tasks.retention_in_days == 7 &&
+      output.workshop_context.account_id == "123456789012" &&
+      output.target_data_uri == "s3://utn-lake-123456789012-us-east-1-an/dms/"
+    )
+    error_message = "DMS debe exponer el contexto del laboratorio y administrar la retención del grupo compartido de logs."
+  }
+  assert {
     condition     = length(aws_dms_endpoint.source) == 0
     error_message = "El endpoint de origen debe esperar a la preparación del usuario."
   }

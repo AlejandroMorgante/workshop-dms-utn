@@ -1,0 +1,38 @@
+{
+  "FullLoadSettings": {
+    "TargetTablePrepMode": "DROP_AND_CREATE",
+    "MaxFullLoadSubTasks": 2,
+    "CommitRate": 1000
+  },
+  "TargetMetadata": {
+    "SupportLobs": false,
+    "BatchApplyEnabled": false
+  },
+  "ErrorBehavior": {
+    "DataErrorPolicy": "STOP_TASK",
+    "DataTruncationErrorPolicy": "STOP_TASK",
+    "TableErrorPolicy": "STOP_TASK",
+    "FailOnNoTablesCaptured": true
+  },
+  "Logging": {
+    "EnableLogging": true,
+    "LogComponents": [
+      {
+        "Id": "TASK_MANAGER",
+        "Severity": "LOGGER_SEVERITY_DEFAULT"
+      },
+      {
+        "Id": "SOURCE_UNLOAD",
+        "Severity": "LOGGER_SEVERITY_DEFAULT"
+      },
+      {
+        "Id": "TARGET_LOAD",
+        "Severity": "LOGGER_SEVERITY_DEFAULT"
+      },
+      {
+        "Id": "METADATA_MANAGER",
+        "Severity": "LOGGER_SEVERITY_DEFAULT"
+      }
+    ]
+  }
+}

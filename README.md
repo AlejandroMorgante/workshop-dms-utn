@@ -61,13 +61,16 @@ Terraform, los datos de ejemplo y las consultas por Data API. Empezá por esa gu
 La [etapa 02 · Amazon S3](docs/02-s3.md) agrega el bucket privado y una práctica
 de objetos, prefijos y versiones. La [etapa 03 · DMS](docs/03-dms.md) agrega
 conectividad privada, endpoints, usuario dedicado y configuración del catálogo.
-Las tareas full load/CDC y las consultas Athena quedan para las etapas siguientes.
+La [etapa 04 · Full load](docs/04-full-load.md) crea la primera task y guía su
+arranque manual, la revisión de Parquet y la comprobación del catálogo.
+CDC y las consultas Athena quedan para las etapas siguientes.
 
 ```text
 infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
   tests/            Comprobaciones de Terraform con AWS simulado
 infra/02-s3/         Stack de la etapa 02: bucket privado, cifrado y versionado
 infra/03-dms/        Stack de la etapa 03: DMS, red, IAM y secreto dedicado
+infra/04-full-load/  Stack de la etapa 04: task, selección de tablas y settings
 scripts/            Asistente para preparar el usuario SQL de replicación
 tests/              Pruebas del asistente sin AWS
 data/               Archivo JSON para explorar S3
@@ -75,13 +78,15 @@ sql/                Esquema, datos ficticios y consultas
 docs/01-aurora.md    Etapa 01: pasos y limpieza
 docs/02-s3.md        Etapa 02: pasos y limpieza
 docs/03-dms.md       Etapa 03: preparación y pruebas de conexión
+docs/04-full-load.md Etapa 04: carga inicial, Parquet y catálogo
 ```
 
 Cada stack es una carpeta raíz de Terraform con su propio estado. Así podemos
 crear una etapa, explorar sus recursos y recién después desplegar la siguiente.
-Los stacks `01-aurora`, `02-s3` y `03-dms` están implementados. DMS lee los outputs
+Los stacks `01-aurora`, `02-s3`, `03-dms` y `04-full-load` están implementados. DMS lee los outputs
 de los estados locales anteriores; reaplicá los stacks 01 y 02 actualizados antes
-de comenzar la etapa 03. La limpieza sigue el orden inverso de dependencias.
+de comenzar la etapa 03. Full load lee el estado de DMS: reaplicá la etapa 03
+actualizada antes de la 04. La limpieza sigue el orden inverso de dependencias.
 
 Para validar Terraform sin crear recursos (después de `terraform -chdir=infra/01-aurora init`):
 
@@ -91,8 +96,8 @@ terraform -chdir=infra/01-aurora validate
 terraform -chdir=infra/01-aurora test
 ```
 
-Para las etapas 02 y 03, repetí esos comandos con `-chdir=infra/02-s3` y
-`-chdir=infra/03-dms` (incluido `init`). Los tests de DMS simulan también los
+Para las etapas 02, 03 y 04, repetí esos comandos con la carpeta correspondiente
+(incluido `init`). Los tests de DMS y full load simulan también los
 estados previos. Con las dependencias de `scripts/requirements.txt` instaladas,
 ejecutá `python -m unittest discover -s tests -v` para probar el asistente.
 

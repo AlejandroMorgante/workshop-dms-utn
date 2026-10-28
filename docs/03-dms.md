@@ -2,7 +2,7 @@
 
 Esta etapa termina con una instancia de replicación y dos conexiones probadas.
 Dejamos preparada la generación automática de Glue Data Catalog; las tareas y
-los primeros datos llegan en la etapa 04. La explicación para clase está en
+los primeros datos llegan en la [etapa 04](04-full-load.md). La explicación para clase está en
 [la web](https://utn.almorgan.dev/etapa-03-dms.html).
 
 ## Las piezas
@@ -278,8 +278,10 @@ no fueron reutilizados por otras cargas. El secreto y la clave KMS quedan progra
 para borrado con una ventana de 7 días. El SQL de limpieza no borra tablas; si detecta
 dependencias ajenas en el usuario, falla para que las revises.
 
-Las futuras tablas/particiones y workgroups generados por DMS no quedan en este
-estado Terraform. Su inspección y limpieza se incorporan al ejercicio de tareas.
+Las tablas/particiones y workgroups generados por DMS no quedan en este estado
+Terraform. La [etapa 04](04-full-load.md#cierre-y-limpieza) incluye su inspección
+y limpieza. El grupo compartido de CloudWatch Logs, con retención de 7 días,
+sí pertenece al stack 03 y se elimina al destruirlo.
 
 ## Validación y referencias
 

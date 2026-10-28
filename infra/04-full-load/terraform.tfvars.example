@@ -1,0 +1,4 @@
+expected_account_id = "REEMPLAZAR_CON_12_DIGITOS"
+aws_profile         = "workshop"
+aws_region          = "us-east-1"
+workshop_name       = "utn-dms"
