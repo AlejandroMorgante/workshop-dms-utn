@@ -44,8 +44,8 @@ resource "aws_security_group" "aurora" {
   name_prefix = "${var.workshop_name}-aurora-"
   description = "Private Aurora; Data API access only in stage 01"
   vpc_id      = aws_vpc.workshop.id
-  ingress     = []
-  egress      = []
+  # Ingress is owned by standalone rules in stage 03. Do not mix inline rules.
+  egress = []
 
   tags = { Name = "${var.workshop_name}-aurora" }
 }

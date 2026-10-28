@@ -1,0 +1,2 @@
+# CRT enables the login credential provider used by aws login.
+boto3[crt]>=1.42.0,<2.0

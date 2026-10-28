@@ -1,0 +1,8 @@
+expected_account_id      = "REEMPLAZAR_CON_12_DIGITOS"
+aws_profile              = "workshop"
+aws_region               = "us-east-1"
+workshop_name            = "utn-dms"
+source_credentials_ready = false
+# Set these to false if the corresponding account-level role already exists.
+create_dms_vpc_role  = true
+create_dms_logs_role = true

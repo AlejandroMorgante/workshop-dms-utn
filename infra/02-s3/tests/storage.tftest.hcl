@@ -28,6 +28,7 @@ run "private_versioned_destination" {
     condition = (
       aws_s3_bucket_versioning.lake.versioning_configuration[0].status == "Enabled" &&
       !aws_s3_bucket.lake.force_destroy &&
+      aws_s3_bucket_lifecycle_configuration.lake.rule[0].noncurrent_version_expiration[0].noncurrent_days == 1 &&
       alltrue([for rule in aws_s3_bucket_server_side_encryption_configuration.lake.rule :
         rule.apply_server_side_encryption_by_default[0].sse_algorithm == "AES256" &&
         contains(rule.blocked_encryption_types, "SSE-C")

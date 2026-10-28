@@ -55,3 +55,17 @@ resource "aws_s3_bucket_policy" "https_only" {
     }]
   })
 }
+
+# DMS recommends removing old versions on versioned S3 targets.
+resource "aws_s3_bucket_lifecycle_configuration" "lake" {
+  bucket = aws_s3_bucket.lake.id
+  rule {
+    id     = "remove-noncurrent-versions"
+    status = "Enabled"
+    filter {}
+    noncurrent_version_expiration { noncurrent_days = 1 }
+    expiration { expired_object_delete_marker = true }
+    abort_incomplete_multipart_upload { days_after_initiation = 1 }
+  }
+  depends_on = [aws_s3_bucket_versioning.lake]
+}

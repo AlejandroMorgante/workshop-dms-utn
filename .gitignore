@@ -21,3 +21,11 @@ crash.*.log
 .DS_Store
 .idea/
 .vscode/
+
+# Local Python helper environment.
+.venv/
+__pycache__/
+*.pyc
+
+# Public RDS trust store, not a private key.
+!infra/03-dms/certs/us-east-1-bundle.pem

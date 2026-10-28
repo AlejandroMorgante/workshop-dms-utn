@@ -34,3 +34,15 @@ output "vpc_id" {
 output "private_subnet_ids" {
   value = aws_subnet.private[*].id
 }
+
+output "aurora_security_group_id" {
+  value = aws_security_group.aurora.id
+}
+
+output "private_route_table_id" {
+  value = aws_route_table.private.id
+}
+
+output "workshop_context" {
+  value = { account_id = var.expected_account_id, region = var.aws_region }
+}

@@ -17,7 +17,6 @@ run "private_database_ready_for_the_workshop" {
     condition = (
       !aws_rds_cluster_instance.writer.publicly_accessible &&
       alltrue([for subnet in aws_subnet.private : !subnet.map_public_ip_on_launch]) &&
-      length(aws_security_group.aurora.ingress) == 0 &&
       length(aws_security_group.aurora.egress) == 0
     )
     error_message = "La base debe permanecer privada y sin reglas de acceso de red en esta etapa."

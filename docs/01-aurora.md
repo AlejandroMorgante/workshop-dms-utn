@@ -78,7 +78,9 @@ En la consola, elegí la misma cuenta y región:
 Tu identidad IAM y `workshop_admin` son cosas diferentes. IAM autoriza la llamada
 a Data API; el servicio usa la credencial de Secrets Manager para conectarse como
 usuario PostgreSQL. Terraform conoce el ARN del secreto, pero no su contraseña.
-El usuario específico de replicación se configura en la etapa de DMS.
+El usuario específico de replicación se configura en la [etapa de DMS](03-dms.md).
+Su regla de acceso de red se administra desde ese stack, sin reglas inline de
+ingreso en el security group de Aurora para evitar conflictos entre estados.
 
 ## 3. Preparar la conexión de la CLI
 

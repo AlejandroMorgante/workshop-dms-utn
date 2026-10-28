@@ -22,3 +22,7 @@ output "sample_uri" {
   description = "Destino del archivo manual, separado de los futuros datos de DMS."
   value       = "s3://${aws_s3_bucket.lake.id}/exploracion/tienda.json"
 }
+
+output "workshop_context" {
+  value = { account_id = var.expected_account_id, region = var.aws_region }
+}

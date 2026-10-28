@@ -9,7 +9,9 @@ AWS Glue Data Catalog y consultas con Amazon Athena.
 - AWS CLI v2, versión 2.32.0 o posterior, instalada y autenticada en esa cuenta.
 - Identidad con los permisos necesarios para crear y eliminar los recursos del
   laboratorio. No usamos el usuario raíz.
-- Terraform 1.7 o posterior instalado.
+- Terraform 1.7 o posterior, menor que 2.0, instalado.
+- Para la etapa 03: Python 3.10 o posterior. La preparación en la web incluye
+  su instalación; el asistente usa boto3 dentro de un entorno virtual local.
 
 La guía de preparación está publicada en **https://utn.almorgan.dev**.
 Allí están las instrucciones de instalación,
@@ -44,7 +46,7 @@ consola antes de continuar:
 1. **Aurora PostgreSQL.** Crear la base, conectarse, cargar datos y explorar tablas.
 2. **Amazon S3.** Preparar el destino y reconocer buckets, prefijos y objetos.
 3. **AWS DMS.** Crear la instancia de replicación y probar los endpoints de origen
-   y destino.
+   y destino, dejando configurada la generación automática de Glue Data Catalog.
 4. **Full load.** Replicar los datos existentes y revisar los archivos Parquet.
 5. **CDC.** Generar inserciones, actualizaciones y eliminaciones para observar
    cómo llegan los cambios al destino.
@@ -57,23 +59,29 @@ consola antes de continuar:
 La [etapa 01 · Aurora PostgreSQL](docs/01-aurora.md) incluye la infraestructura
 Terraform, los datos de ejemplo y las consultas por Data API. Empezá por esa guía.
 La [etapa 02 · Amazon S3](docs/02-s3.md) agrega el bucket privado y una práctica
-de objetos, prefijos y versiones. DMS, Glue y Athena están pendientes.
+de objetos, prefijos y versiones. La [etapa 03 · DMS](docs/03-dms.md) agrega
+conectividad privada, endpoints, usuario dedicado y configuración del catálogo.
+Las tareas full load/CDC y las consultas Athena quedan para las etapas siguientes.
 
 ```text
 infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
   tests/            Comprobaciones de Terraform con AWS simulado
 infra/02-s3/         Stack de la etapa 02: bucket privado, cifrado y versionado
+infra/03-dms/        Stack de la etapa 03: DMS, red, IAM y secreto dedicado
+scripts/            Asistente para preparar el usuario SQL de replicación
+tests/              Pruebas del asistente sin AWS
 data/               Archivo JSON para explorar S3
 sql/                Esquema, datos ficticios y consultas
 docs/01-aurora.md    Etapa 01: pasos y limpieza
 docs/02-s3.md        Etapa 02: pasos y limpieza
+docs/03-dms.md       Etapa 03: preparación y pruebas de conexión
 ```
 
 Cada stack es una carpeta raíz de Terraform con su propio estado. Así podemos
 crear una etapa, explorar sus recursos y recién después desplegar la siguiente.
-La separación prevista es `01-aurora`, `02-s3` y `03-dms`; ya están implementados
-los dos primeros. Las etapas posteriores recibirán los outputs de las
-anteriores, y la limpieza se hará en orden inverso a sus dependencias.
+Los stacks `01-aurora`, `02-s3` y `03-dms` están implementados. DMS lee los outputs
+de los estados locales anteriores; reaplicá los stacks 01 y 02 actualizados antes
+de comenzar la etapa 03. La limpieza sigue el orden inverso de dependencias.
 
 Para validar Terraform sin crear recursos (después de `terraform -chdir=infra/01-aurora init`):
 
@@ -83,14 +91,21 @@ terraform -chdir=infra/01-aurora validate
 terraform -chdir=infra/01-aurora test
 ```
 
-Para validar la etapa 02, ejecutá los mismos comandos usando
-`-chdir=infra/02-s3` (incluido `init`).
+Para las etapas 02 y 03, repetí esos comandos con `-chdir=infra/02-s3` y
+`-chdir=infra/03-dms` (incluido `init`). Los tests de DMS simulan también los
+estados previos. Con las dependencias de `scripts/requirements.txt` instaladas,
+ejecutá `python -m unittest discover -s tests -v` para probar el asistente.
 
-Las pruebas usan un provider simulado; no prueban la creación real de Aurora o S3,
-los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3. El ensayo completo en
+Las pruebas usan un provider simulado; no prueban la creación real de Aurora, S3 o DMS,
+los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3 o la generación del catálogo. El ensayo completo en
 una cuenta de laboratorio sigue siendo necesario antes del workshop.
 
 La creación del esquema, la carga repetida, las claves, las restricciones y los
 totales de las consultas se comprobaron con PostgreSQL embebido (PGlite 0.5.12,
 PostgreSQL 18.6). Esa comprobación local no sustituye la prueba en Aurora 16.13
 ni valida los parámetros específicos de RDS del archivo `04-verificar.sql`.
+
+El asistente de DMS también se comprobó con PostgreSQL embebido: formato SCRAM
+comparado con el generado por PostgreSQL, ejecución repetida, lectura permitida,
+escritura rechazada y protección de roles ajenos. La credencial real nunca se
+guarda en Terraform ni se imprime.
