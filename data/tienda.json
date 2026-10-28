@@ -1,0 +1,6 @@
+{
+  "origen": "carga-manual-etapa-02",
+  "descripcion": "Archivo ficticio para explorar objetos y prefijos en S3.",
+  "tienda": "Tienda UTN",
+  "tablas_previstas": ["clientes", "productos", "pedidos", "items_pedido"]
+}

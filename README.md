@@ -56,19 +56,23 @@ consola antes de continuar:
 
 La [etapa 01 · Aurora PostgreSQL](docs/01-aurora.md) incluye la infraestructura
 Terraform, los datos de ejemplo y las consultas por Data API. Empezá por esa guía.
-Las etapas de S3, DMS, Glue y Athena están pendientes.
+La [etapa 02 · Amazon S3](docs/02-s3.md) agrega el bucket privado y una práctica
+de objetos, prefijos y versiones. DMS, Glue y Athena están pendientes.
 
 ```text
 infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
   tests/            Comprobaciones de Terraform con AWS simulado
+infra/02-s3/         Stack de la etapa 02: bucket privado, cifrado y versionado
+data/               Archivo JSON para explorar S3
 sql/                Esquema, datos ficticios y consultas
-docs/01-aurora.md    Pasos del participante y limpieza
+docs/01-aurora.md    Etapa 01: pasos y limpieza
+docs/02-s3.md        Etapa 02: pasos y limpieza
 ```
 
 Cada stack es una carpeta raíz de Terraform con su propio estado. Así podemos
 crear una etapa, explorar sus recursos y recién después desplegar la siguiente.
-La separación prevista es `01-aurora`, `02-s3` y `03-dms`; por ahora solo está
-implementado el primero. Las etapas posteriores recibirán los outputs de las
+La separación prevista es `01-aurora`, `02-s3` y `03-dms`; ya están implementados
+los dos primeros. Las etapas posteriores recibirán los outputs de las
 anteriores, y la limpieza se hará en orden inverso a sus dependencias.
 
 Para validar Terraform sin crear recursos (después de `terraform -chdir=infra/01-aurora init`):
@@ -79,8 +83,11 @@ terraform -chdir=infra/01-aurora validate
 terraform -chdir=infra/01-aurora test
 ```
 
-Las pruebas usan un provider simulado; no prueban la creación real de Aurora,
-los permisos de una cuenta ni la ejecución de Data API. El ensayo completo en
+Para validar la etapa 02, ejecutá los mismos comandos usando
+`-chdir=infra/02-s3` (incluido `init`).
+
+Las pruebas usan un provider simulado; no prueban la creación real de Aurora o S3,
+los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3. El ensayo completo en
 una cuenta de laboratorio sigue siendo necesario antes del workshop.
 
 La creación del esquema, la carga repetida, las claves, las restricciones y los
