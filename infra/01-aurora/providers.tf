@@ -8,6 +8,8 @@ provider "aws" {
       Project     = "workshop-dms-utn"
       Environment = "workshop"
       ManagedBy   = "Terraform"
+      Workshop    = var.workshop_name
+      Stage       = "01-aurora"
     }
   }
 }

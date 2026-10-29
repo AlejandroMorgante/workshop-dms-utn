@@ -8,9 +8,6 @@ mock_provider "aws" {
   mock_resource "aws_dms_certificate" {
     defaults = { certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:EXAMPLE" }
   }
-  mock_resource "aws_kms_key" {
-    defaults = { arn = "arn:aws:kms:us-east-1:123456789012:key/00000000-0000-0000-0000-000000000000" }
-  }
   mock_data "aws_partition" { defaults = { partition = "aws" } }
   mock_resource "aws_vpc_endpoint" {
     defaults = { dns_entry = [{ dns_name = "vpce-workshop.example.com", hosted_zone_id = "ZEXAMPLE" }] }
@@ -40,7 +37,11 @@ override_data {
   }
 }
 variables {
-  expected_account_id = "123456789012"
+  expected_account_id      = "123456789012"
+  workshop_name            = "utn-dms"
+  source_credentials_ready = false
+  create_dms_vpc_role      = true
+  create_dms_logs_role     = true
 }
 
 run "infrastructure_before_credentials" {
@@ -49,6 +50,8 @@ run "infrastructure_before_credentials" {
     condition = (
       aws_cloudwatch_log_group.tasks.name == "dms-tasks-utn-dms-replication" &&
       aws_cloudwatch_log_group.tasks.retention_in_days == 7 &&
+      aws_secretsmanager_secret.source.recovery_window_in_days == 0 &&
+      aws_secretsmanager_secret.source.kms_key_id == null &&
       output.workshop_context.account_id == "123456789012" &&
       output.target_data_uri == "s3://utn-lake-123456789012-us-east-1-an/dms/"
     )
@@ -73,7 +76,7 @@ run "infrastructure_before_credentials" {
     condition = (
       aws_dms_s3_endpoint.target.data_format == "parquet" &&
       aws_dms_s3_endpoint.target.glue_catalog_generation &&
-      aws_dms_s3_endpoint.target.date_partition_enabled &&
+      !aws_dms_s3_endpoint.target.date_partition_enabled &&
       aws_dms_s3_endpoint.target.include_op_for_full_load &&
       aws_dms_s3_endpoint.target.parquet_timestamp_in_millisecond &&
       aws_dms_s3_endpoint.target.cdc_path == null &&

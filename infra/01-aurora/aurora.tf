@@ -57,11 +57,6 @@ resource "aws_rds_cluster" "aurora" {
   skip_final_snapshot      = true
   delete_automated_backups = true
 
-  tags = {
-    created_by       = "aurora-skill"
-    generation_model = "unknown"
-  }
-
   depends_on = [aws_cloudwatch_log_group.postgresql]
 }
 
@@ -73,8 +68,4 @@ resource "aws_rds_cluster_instance" "writer" {
   engine_version      = aws_rds_cluster.aurora.engine_version
   publicly_accessible = false
 
-  tags = {
-    created_by       = "aurora-skill"
-    generation_model = "unknown"
-  }
 }

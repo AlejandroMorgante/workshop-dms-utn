@@ -102,8 +102,9 @@ estados previos. Con las dependencias de `scripts/requirements.txt` instaladas,
 ejecutá `python -m unittest discover -s tests -v` para probar el asistente.
 
 Las pruebas usan un provider simulado; no prueban la creación real de Aurora, S3 o DMS,
-los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3 o la generación del catálogo. El ensayo completo en
-una cuenta de laboratorio sigue siendo necesario antes del workshop.
+los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3 o la generación del catálogo. El ensayo real de las etapas 01–04 se ejecutó en `us-east-1`: 31 filas en Parquet,
+cuatro tablas Glue generadas por DMS y conteos consultados con Athena.
+Los resultados y las correcciones están en [el informe](docs/ensayo-end-to-end.md).
 
 La creación del esquema, la carga repetida, las claves, las restricciones y los
 totales de las consultas se comprobaron con PostgreSQL embebido (PGlite 0.5.12,
@@ -114,3 +115,16 @@ El asistente de DMS también se comprobó con PostgreSQL embebido: formato SCRAM
 comparado con el generado por PostgreSQL, ejecución repetida, lectura permitida,
 escritura rechazada y protección de roles ajenos. La credencial real nunca se
 guarda en Terraform ni se imprime.
+
+## Identificación de recursos
+
+Los cuatro providers aplican los tags comunes `Project=workshop-dms-utn`,
+`Environment=workshop`, `ManagedBy=Terraform` y `Workshop=<workshop_name>`.
+`Stage` identifica la carpeta de la etapa. Usá un `workshop_name` único por ensayo.
+Los recursos que no admiten tags y los creados internamente por AWS necesitan
+inventario por IDs y relaciones; los tags por sí solos no prueban una limpieza
+completa. Los roles de cuenta reutilizados conservan sus tags y su propietario.
+
+El secreto dedicado usa la clave administrada `aws/secretsmanager` y se destruye
+sin recuperación. Este comportamiento está pensado para datos descartables del
+workshop. No se crea una clave KMS propia con borrado diferido.

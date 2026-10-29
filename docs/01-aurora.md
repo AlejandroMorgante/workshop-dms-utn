@@ -73,7 +73,9 @@ En la consola, elegí la misma cuenta y región:
 3. En la configuración del cluster, ubicá el usuario `workshop_admin`, el secreto
    administrado por RDS y Data API habilitada. No hace falta revelar la contraseña.
 4. En el grupo de parámetros, buscá `rds.logical_replication` y `rds.force_ssl`.
-   Ambos tienen valor `1`. La consulta del último paso verifica su valor activo.
+   Ambos tienen valor `1`. Verificá que el grupo figure aplicado (`in-sync`).
+   Aurora no expone `rds.force_ssl` mediante `current_setting`; su valor se revisa
+   en el grupo de parámetros de RDS.
 
 Tu identidad IAM y `workshop_admin` son cosas diferentes. IAM autoriza la llamada
 a Data API; el servicio usa la credencial de Secrets Manager para conectarse como
@@ -165,8 +167,9 @@ aws rds-data execute-statement --profile workshop --region us-east-1 --cli-input
 aws rds-data execute-statement --profile workshop --region us-east-1 --cli-input-json file://.local/aurora.json --sql file://sql/04-verificar.sql --format-records-as JSON --query formattedRecords --output text
 ```
 
-Esperamos base `workshop`, usuario `workshop_admin`, replicación lógica y SSL en
-`on` o `1`, `wal_level` en `logical`, y estos conteos:
+Esperamos base `workshop`, usuario `workshop_admin`, replicación lógica en
+`on` o `1`, `wal_level` en `logical`, y estos conteos. SSL obligatorio se comprueba
+en el grupo de parámetros de RDS, con `rds.force_ssl=1` y estado `in-sync`:
 
 | Tabla | Filas |
 | --- | ---: |

@@ -1,14 +1,7 @@
-resource "aws_kms_key" "source" {
-  description             = "Workshop DMS source credential encryption"
-  enable_key_rotation     = true
-  deletion_window_in_days = 7
-}
-
 resource "aws_secretsmanager_secret" "source" {
   name_prefix             = "${var.workshop_name}/dms-source-"
   description             = "Dedicated PostgreSQL replication user; initialized by the workshop helper"
-  kms_key_id              = aws_kms_key.source.arn
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0 # Disposable lab: permanently delete on destroy.
 }
 
 resource "aws_dms_replication_instance" "workshop" {
@@ -71,13 +64,14 @@ resource "aws_dms_s3_endpoint" "target" {
   timestamp_column_name                       = "dms_commit_timestamp"
   use_task_start_time_for_full_load_timestamp = true
   glue_catalog_generation                     = true
-  date_partition_enabled                      = true
-  date_partition_sequence                     = "YYYYMMDD"
-  date_partition_delimiter                    = "SLASH"
-  date_partition_timezone                     = "UTC"
-  encryption_mode                             = "SSE_S3"
-  cdc_max_batch_interval                      = 60
-  cdc_min_file_size                           = 32
+  # DMS rejects full-load-only tasks when date partitioning is enabled.
+  date_partition_enabled   = false
+  date_partition_sequence  = "YYYYMMDD"
+  date_partition_delimiter = "SLASH"
+  date_partition_timezone  = "UTC"
+  encryption_mode          = "SSE_S3"
+  cdc_max_batch_interval   = 60
+  cdc_min_file_size        = 32
   # No CdcPath/PreserveTransactions: incompatible with catalog/date partitioning.
   depends_on = [aws_iam_role_policy.target, aws_vpc_endpoint.s3, aws_vpc_endpoint.services]
 }

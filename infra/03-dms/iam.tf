@@ -46,11 +46,7 @@ resource "aws_iam_role_policy" "source" {
       {
         Effect   = "Allow", Action = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
         Resource = aws_secretsmanager_secret.source.arn
-      },
-      {
-        Effect    = "Allow", Action = ["kms:Decrypt", "kms:DescribeKey"]
-        Resource  = aws_kms_key.source.arn
-        Condition = { StringEquals = { "kms:ViaService" = "secretsmanager.${var.aws_region}.amazonaws.com" } }
+
       }
     ]
   })

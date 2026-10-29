@@ -19,7 +19,7 @@ los primeros datos llegan en la [etapa 04](04-full-load.md). La explicación par
 
 Los cuatro endpoints de interfaz usan una sola subnet para simplificar el taller.
 No es una arquitectura de alta disponibilidad. La instancia DMS, su almacenamiento,
-los endpoints de interfaz, Secrets Manager y la clave KMS generan consumo aunque
+los endpoints de interfaz y Secrets Manager generan consumo aunque
 no haya una tarea corriendo. No dejes esta etapa levantada entre encuentros sin
 revisar ese consumo y la limpieza.
 
@@ -78,7 +78,8 @@ RDS de esa región. No hay contraseñas en las variables.
 Además de crear los recursos del stack, tu identidad necesita `iam:PassRole` y
 `iam:GetRole` sobre los roles de endpoints, y `secretsmanager:DescribeSecret`.
 El asistente usa STS, Data API, lectura de la credencial administradora a través
-de Data API, lectura/escritura del secreto dedicado y los permisos KMS asociados.
+de Data API, lectura/escritura del secreto dedicado. Usamos la clave administrada
+`aws/secretsmanager`, sin crear una clave KMS propia.
 No alcanza con poder ejecutar `sts:GetCallerIdentity`.
 
 ## 3. Crear la infraestructura y el destino
@@ -146,7 +147,8 @@ Ejecutalo de a uno. Si falla después de guardar el secreto, podés repetirlo:
 reutiliza la misma credencial y revierte la transacción SQL fallida. Si encuentra
 un secreto de otro origen o un rol SQL ajeno al taller, se detiene sin sobrescribirlos.
 No hay rotación automática del usuario dedicado en este laboratorio; una operación
-permanente necesita su propio mecanismo de rotación. La clave KMS sí rota.
+permanente necesita su propio mecanismo de rotación. El cifrado del secreto usa
+la clave administrada por AWS.
 
 ## 5. Crear el endpoint de origen
 
@@ -217,11 +219,13 @@ En el destino S3, identificá estas opciones:
 | `IncludeOpForFullLoad` | `true` |
 | `TimestampColumnName` | `dms_commit_timestamp` |
 | `ParquetTimestampInMillisecond` | `true` |
-| `DatePartitionEnabled` | `true` |
+| `DatePartitionEnabled` | `false` para la task full-load |
 | `DatePartitionSequence` / `DatePartitionDelimiter` | `YYYYMMDD` / `SLASH` |
 
-Las particiones por fecha aplican a **CDC**, usando fecha de commit; no particionan
-el full load ni son automáticamente el formato Hive `clave=valor`.
+El destino de esta etapa deja el particionado por fecha deshabilitado: DMS rechaza
+una task `full-load` si el endpoint lo tiene activo. La etapa CDC tendrá su propia
+configuración por fecha de commit; no equivale automáticamente al formato Hive
+`clave=valor`.
 El rol de destino puede operar en el bucket del laboratorio, administrar metadatos
 Glue en esta cuenta/región y usar workgroups Athena con el prefijo que genera DMS.
 Los nombres Glue los decide DMS: en este taller la política cubre las bases y tablas
@@ -274,8 +278,9 @@ aws rds-data execute-statement --profile workshop --region us-east-1 --cli-input
 
 Terraform elimina los endpoints de red y las reglas que creó; los roles reutilizados
 no se modifican. Los roles de cuenta creados por este stack solo deben eliminarse si
-no fueron reutilizados por otras cargas. El secreto y la clave KMS quedan programados
-para borrado con una ventana de 7 días. El SQL de limpieza no borra tablas; si detecta
+no fueron reutilizados por otras cargas. El secreto dedicado se elimina sin ventana de recuperación: sus credenciales
+son descartables y este borrado es irreversible. No creamos una clave KMS propia.
+La clave administrada de AWS permanece en la cuenta. El SQL de limpieza no borra tablas; si detecta
 dependencias ajenas en el usuario, falla para que las revises.
 
 Las tablas/particiones y workgroups generados por DMS no quedan en este estado
@@ -288,7 +293,8 @@ sí pertenece al stack 03 y se elimina al destruirlo.
 Comprobaciones locales: Terraform con AWS y estados anteriores simulados; pruebas
 del asistente sin AWS; ejecución SQL y comparación del verificador SCRAM contra
 PostgreSQL embebido. Esto no reemplaza un despliegue ni prueba conectividad, cuotas,
-IAM efectivo o catálogo real. El ensayo integral en AWS está pendiente.
+IAM efectivo o catálogo real. El ensayo real posterior verificó ambas conexiones
+y la generación del catálogo; ver [el informe](ensayo-end-to-end.md).
 
 - [PostgreSQL como origen](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html).
 - [Secretos para endpoints DMS](https://docs.aws.amazon.com/dms/latest/userguide/security_iam_secretsmanager.html).

@@ -18,6 +18,9 @@ lo mismo que ejecutar**. Ejecutá los comandos desde la raíz del repositorio.
   insertes, actualices ni borres filas: el full load aislado no captura cambios
   concurrentes ni garantiza una fotografía consistente de varias tablas activas.
 - Usá el destino de este laboratorio, sin otras tasks escribiendo en él.
+- Revisá Glue antes de arrancar: en el ensayo DMS generó la base `tienda` y
+  tablas con los nombres del origen. Si ya existen tablas ajenas con esos nombres,
+  no ejecutes la task sobre ese catálogo sin resolver primero el aislamiento.
 
 ```sh
 aws sts get-caller-identity --profile workshop
@@ -183,8 +186,8 @@ compatible con tu Python. Mirá tipos, columnas de negocio y metadatos añadidos
 el endpoint, como `dms_commit_timestamp`. El conteo corresponde a **ese archivo**;
 si una tabla tiene varios, sumá sus filas. La muestra imprime como máximo cinco.
 
-**Todavía no hay particiones por fecha.** `DatePartitionEnabled` aplica a CDC,
-no a full load. Los prefijos por esquema y tabla tampoco son por sí solos
+**Todavía no hay particiones por fecha.** `DatePartitionEnabled` debe quedar
+en `false`: DMS rechaza una task `full-load` con esa opción habilitada. Los prefijos por esquema y tabla tampoco son por sí solos
 particiones Hive `clave=valor`. Compararemos esos conceptos en la siguiente etapa.
 
 ## 6. Comprobar Glue Data Catalog
@@ -270,7 +273,9 @@ workgroups generados por DMS: no están administrados por este estado Terraform.
 
 Los tests Terraform simulan AWS y el estado anterior: comprueban selección exacta,
 arranque manual, manejo de errores y rechazo de dependencias sin preparar o en otra
-cuenta/región. No ejecutan una replicación real. El ensayo en AWS queda pendiente.
+cuenta/región. No ejecutan una replicación real. El ensayo posterior en AWS
+comprobó las 31 filas en Parquet, las cuatro tablas Glue y sus conteos en Athena;
+ver [el informe](ensayo-end-to-end.md).
 
 ```sh
 terraform -chdir=infra/04-full-load test
