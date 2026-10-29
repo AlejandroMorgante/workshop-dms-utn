@@ -227,3 +227,28 @@ primero esos stacks. La limpieza de `01-aurora` queda al final del recorrido.
 - [PostgreSQL como origen de DMS](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html).
 - [Limitaciones y errores de Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.troubleshooting.html).
 - [Contraseñas de Aurora administradas por RDS](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html).
+
+## Query Editor de la consola (opcional)
+
+Está en **Amazon RDS/Aurora**, no en DMS. En RDS → Databases, seleccioná el cluster
+y buscá Actions → Query. Requiere Data API habilitada. La conexión inicial de la
+consola puede pedir credenciales y crear un secreto propio `rds-db-credentials/*`;
+no asumimos que reutiliza automáticamente el secreto administrado de este taller.
+El recorrido probado usa AWS CLI + Data API con el ARN del secreto existente, sin
+mostrar la contraseña. Si creás una conexión adicional en la consola, registrá
+su secreto en tu inventario y eliminá solo ese secreto al cerrar; el asistente
+no borra secretos que no creó el laboratorio.
+
+[Documentación del Query Editor](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/query-editor.html).
+
+## Cierre del recorrido completo
+
+Si también desplegaste full load, CDC o Athena, usá [07 · Limpieza](07-limpieza.md)
+para eliminar los seis stacks en orden y verificar recursos generados. Las
+instrucciones de limpieza de esta etapa sirven para un recorrido parcial.
+
+## Ritmo de la clase
+
+Reservá varios minutos para crear el writer. En el ensayo de este recorrido tardó
+alrededor de ocho minutos; no es un tiempo garantizado. Mientras Terraform espera,
+podés recorrer VPC, subnets, security groups y parámetros del cluster en la consola.

@@ -4,10 +4,11 @@ resource "aws_dms_replication_task" "full_load" {
   replication_instance_arn  = local.dms.replication_instance_arn
   source_endpoint_arn       = try(local.dms.source_endpoint_arn, null)
   target_endpoint_arn       = local.dms.target_endpoint_arn
-  table_mappings            = file("${path.module}/config/table-mappings.json")
+  table_mappings            = templatefile("${path.module}/config/table-mappings.json.tftpl", { catalog_name = local.catalog_name })
   replication_task_settings = file("${path.module}/config/task-settings.json")
   # Start explicitly with AWS CLI during the workshop, after inspecting the task.
   start_replication_task = false
+  depends_on             = [aws_glue_catalog_database.full_load]
 
   lifecycle {
     precondition {

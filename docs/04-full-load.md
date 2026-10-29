@@ -18,9 +18,9 @@ lo mismo que ejecutar**. Ejecutá los comandos desde la raíz del repositorio.
   insertes, actualices ni borres filas: el full load aislado no captura cambios
   concurrentes ni garantiza una fotografía consistente de varias tablas activas.
 - Usá el destino de este laboratorio, sin otras tasks escribiendo en él.
-- Revisá Glue antes de arrancar: en el ensayo DMS generó la base `tienda` y
-  tablas con los nombres del origen. Si ya existen tablas ajenas con esos nombres,
-  no ejecutes la task sobre ese catálogo sin resolver primero el aislamiento.
+- Terraform crea una base Glue vacía `<workshop_name_con_guiones_bajos>_load`.
+  La transformación del esquema aísla el destino; DMS crea allí las tablas.
+  Usá un `workshop_name` exclusivo, sin recursos ajenos en ese namespace.
 
 ```sh
 aws sts get-caller-identity --profile workshop
@@ -56,7 +56,7 @@ Rechaza una cuenta/región distinta y un origen todavía sin preparar.
 
 Abrí estos archivos:
 
-- `config/table-mappings.json`: cuatro reglas `explicit`, una por tabla del esquema
+- `config/table-mappings.json.tftpl`: cuatro reglas `explicit`, una por tabla del esquema
   `tienda`. No seleccionamos esquemas completos ni interpretamos el guion bajo de
   `items_pedido` como un comodín.
 - `config/task-settings.json`: configuración de carga, errores y logs.
@@ -89,7 +89,7 @@ terraform -chdir=infra/04-full-load plan
 terraform -chdir=infra/04-full-load apply
 ```
 
-El plan debe agregar **una task**; no otra instancia de replicación. En la consola
+El plan debe agregar **una task y una base Glue vacía**; no otra instancia de replicación. En la consola
 DMS, abrí **Database migration tasks** y encontrá `utn-dms-full-load` (o tu prefijo).
 Revisá origen, destino, modo y selección de tablas. Esperá el estado `ready`.
 Todavía no deberían aparecer archivos nuevos de esta task en S3.
@@ -160,10 +160,10 @@ aws s3 ls "$workshop_destination" --profile workshop --region us-east-1 --recurs
 Buscá archivos `LOAD….parquet` dentro de rutas como:
 
 ```text
-s3://<bucket>/dms/tienda/clientes/LOAD….parquet
-s3://<bucket>/dms/tienda/productos/LOAD….parquet
-s3://<bucket>/dms/tienda/pedidos/LOAD….parquet
-s3://<bucket>/dms/tienda/items_pedido/LOAD….parquet
+s3://<bucket>/dms/<nombre>_load/clientes/LOAD….parquet
+s3://<bucket>/dms/<nombre>_load/productos/LOAD….parquet
+s3://<bucket>/dms/<nombre>_load/pedidos/LOAD….parquet
+s3://<bucket>/dms/<nombre>_load/items_pedido/LOAD….parquet
 ```
 
 Son ejemplos de estructura, no nombres literales para copiar. DMS decide el número
@@ -177,7 +177,7 @@ entorno virtual Python de la etapa 03:
 
 ```sh
 python -m pip install "pyarrow>=20,<27"
-aws s3 cp "s3://REEMPLAZAR_BUCKET/dms/tienda/pedidos/REEMPLAZAR_ARCHIVO.parquet" .local/pedidos.parquet --profile workshop --region us-east-1
+aws s3 cp "s3://REEMPLAZAR_BUCKET/dms/<nombre>_load/pedidos/REEMPLAZAR_ARCHIVO.parquet" .local/pedidos.parquet --profile workshop --region us-east-1
 python -c "import pyarrow.parquet as pq; p=pq.ParquetFile('.local/pedidos.parquet'); print(p.schema_arrow); print('Filas en este archivo:', p.metadata.num_rows); print(next(p.iter_batches(batch_size=5), None))"
 ```
 
@@ -204,7 +204,8 @@ aws glue get-databases --profile workshop --region us-east-1 --query 'DatabaseLi
 aws glue get-tables --profile workshop --region us-east-1 --database-name REEMPLAZAR_BASE_GLUE --query 'TableList[].{Tabla:Name,Ubicacion:StorageDescriptor.Location,Columnas:StorageDescriptor.Columns,Particiones:PartitionKeys}' --output json
 ```
 
-DMS genera los nombres: no supongas que la base Glue se llama `workshop` o `tienda`.
+El output `catalog_database` da el nombre de la base Glue aislada. DMS genera
+las tablas dentro de ella; el esquema de origen sigue siendo `tienda`.
 Verificá las **ubicaciones S3** y reconocé las cuatro tablas por sus columnas.
 Compará los tipos del catálogo con el esquema de Aurora y, si hiciste la práctica
 opcional, con Parquet. Guardá los nombres en tus apuntes para consultar con Athena.
@@ -235,7 +236,7 @@ operar DMS y S3. El rol del endpoint es otra identidad.
 No continuamos este full load con un CDC independiente suponiendo continuidad:
 los cambios entre ambas ejecuciones podrían perderse. La etapa 05 preparará una
 carga inicial **full load + CDC** y resolverá la separación del destino antes de
-arrancar. Esta etapa no implementa todavía ese recorrido.
+arrancar. Seguí [la guía 05](05-cdc.md) para ejecutarlo.
 
 ## Cierre y limpieza
 
@@ -246,28 +247,10 @@ Glue apuntando al destino del laboratorio.
 Si seguís con el workshop, conservá los recursos. Una task terminada no apaga la
 instancia DMS, Aurora ni los endpoints de interfaz: siguen consumiendo.
 
-Si cerrás el laboratorio:
-
-1. Eliminá primero la task (Terraform la detiene si sigue ejecutándose):
-
-```sh
-terraform -chdir=infra/04-full-load plan -destroy
-terraform -chdir=infra/04-full-load destroy
-```
-
-2. En Glue, eliminá **solo** las tablas que verificaste por ubicación como propias
-   de este ejercicio. Eliminá la base únicamente si fue creada por el taller y
-   quedó vacía. No elimines bases por parecerse sus nombres.
-3. En Athena, revisá y eliminá el workgroup generado para esta task si ya no se
-   usa. No borres `primary` ni los de otros ejercicios. Revisá su ubicación de
-   resultados para incluir sus objetos en la limpieza.
-4. Seguí [la limpieza de la etapa 03](03-dms.md#limpieza), luego S3 y Aurora.
-   El stack 03 elimina el grupo de logs compartido; guardá antes cualquier evidencia
-   que necesites. Para vaciar S3, incluí versiones y delete markers como indica la
-   etapa 02.
-
-Destruir la task no elimina automáticamente los objetos S3 ni el catálogo o los
-workgroups generados por DMS: no están administrados por este estado Terraform.
+Para cerrar todo el laboratorio, seguí [07 · Limpieza](07-limpieza.md).
+El asistente conserva los ARNs de las tasks antes de destruirlas, limpia sus
+workgroups internos y todas las versiones de objetos, y destruye los stacks
+por dependencias. Terraform elimina la base Glue propia y sus tablas.
 
 ## Validación y referencias
 
@@ -275,7 +258,7 @@ Los tests Terraform simulan AWS y el estado anterior: comprueban selección exac
 arranque manual, manejo de errores y rechazo de dependencias sin preparar o en otra
 cuenta/región. No ejecutan una replicación real. El ensayo posterior en AWS
 comprobó las 31 filas en Parquet, las cuatro tablas Glue y sus conteos en Athena;
-ver [el informe](ensayo-end-to-end.md).
+ver [el informe inicial](ensayo-end-to-end.md) y [el ensayo con catálogo aislado y CDC](ensayo-cdc.md).
 
 ```sh
 terraform -chdir=infra/04-full-load test

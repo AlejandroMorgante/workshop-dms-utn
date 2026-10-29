@@ -63,7 +63,10 @@ de objetos, prefijos y versiones. La [etapa 03 · DMS](docs/03-dms.md) agrega
 conectividad privada, endpoints, usuario dedicado y configuración del catálogo.
 La [etapa 04 · Full load](docs/04-full-load.md) crea la primera task y guía su
 arranque manual, la revisión de Parquet y la comprobación del catálogo.
-CDC y las consultas Athena quedan para las etapas siguientes.
+La [etapa 05 · CDC](docs/05-cdc.md) agrega full load + CDC en un destino separado
+con los ejercicios I/U/D. La [etapa 06 · Athena](docs/06-athena.md) crea el workgroup,
+resultados privados y consultas guardadas. La [etapa 07 · Limpieza](docs/07-limpieza.md)
+cierra el recorrido con inventario, eliminación y verificación.
 
 ```text
 infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
@@ -71,19 +74,24 @@ infra/01-aurora/     Stack de la etapa 01: red, Aurora y lockfile del provider
 infra/02-s3/         Stack de la etapa 02: bucket privado, cifrado y versionado
 infra/03-dms/        Stack de la etapa 03: DMS, red, IAM y secreto dedicado
 infra/04-full-load/  Stack de la etapa 04: task, selección de tablas y settings
+infra/05-cdc/        Stack CDC: destino aislado, catálogo y task full load + CDC
+infra/06-athena/     Stack de consultas: workgroup, resultados y SQL guardado
 scripts/            Asistente para preparar el usuario SQL de replicación
-tests/              Pruebas del asistente sin AWS
+tests/              Pruebas de los asistentes sin AWS
 data/               Archivo JSON para explorar S3
 sql/                Esquema, datos ficticios y consultas
 docs/01-aurora.md    Etapa 01: pasos y limpieza
 docs/02-s3.md        Etapa 02: pasos y limpieza
 docs/03-dms.md       Etapa 03: preparación y pruebas de conexión
 docs/04-full-load.md Etapa 04: carga inicial, Parquet y catálogo
+docs/05-cdc.md       Etapa 05: cambios I/U/D y particiones
+docs/06-athena.md    Etapa 06: historial, estado y consultas
+docs/07-limpieza.md  Etapa 07: inventario, destroy y verificación
 ```
 
 Cada stack es una carpeta raíz de Terraform con su propio estado. Así podemos
 crear una etapa, explorar sus recursos y recién después desplegar la siguiente.
-Los stacks `01-aurora`, `02-s3`, `03-dms` y `04-full-load` están implementados. DMS lee los outputs
+Los seis stacks, de `01-aurora` a `06-athena`, están implementados. DMS lee los outputs
 de los estados locales anteriores; reaplicá los stacks 01 y 02 actualizados antes
 de comenzar la etapa 03. Full load lee el estado de DMS: reaplicá la etapa 03
 actualizada antes de la 04. La limpieza sigue el orden inverso de dependencias.
@@ -96,15 +104,19 @@ terraform -chdir=infra/01-aurora validate
 terraform -chdir=infra/01-aurora test
 ```
 
-Para las etapas 02, 03 y 04, repetí esos comandos con la carpeta correspondiente
-(incluido `init`). Los tests de DMS y full load simulan también los
+Para las etapas 02 a 06, repetí esos comandos con la carpeta correspondiente
+(incluido `init`). Los tests de las etapas 03–06 simulan también los
 estados previos. Con las dependencias de `scripts/requirements.txt` instaladas,
-ejecutá `python -m unittest discover -s tests -v` para probar el asistente.
+ejecutá `python -m unittest discover -s tests -v` para probar los asistentes de preparación y limpieza.
 
 Las pruebas usan un provider simulado; no prueban la creación real de Aurora, S3 o DMS,
 los permisos de una cuenta, la ejecución de Data API ni las transferencias a S3 o la generación del catálogo. El ensayo real de las etapas 01–04 se ejecutó en `us-east-1`: 31 filas en Parquet,
 cuatro tablas Glue generadas por DMS y conteos consultados con Athena.
-Los resultados y las correcciones están en [el informe](docs/ensayo-end-to-end.md).
+Los resultados y las correcciones están en [el informe inicial](docs/ensayo-end-to-end.md).
+El [ensayo con CDC](docs/ensayo-cdc.md) amplía la prueba a los seis stacks, eventos
+I/U/D, particiones y reconstrucción del estado desde Athena. El cierre eliminó
+los 66 recursos Terraform y los generados por DMS, con verificación posterior
+por APIs de servicios y comprobación de estados vacíos.
 
 La creación del esquema, la carga repetida, las claves, las restricciones y los
 totales de las consultas se comprobaron con PostgreSQL embebido (PGlite 0.5.12,
@@ -118,7 +130,7 @@ guarda en Terraform ni se imprime.
 
 ## Identificación de recursos
 
-Los cuatro providers aplican los tags comunes `Project=workshop-dms-utn`,
+Los seis providers aplican los tags comunes `Project=workshop-dms-utn`,
 `Environment=workshop`, `ManagedBy=Terraform` y `Workshop=<workshop_name>`.
 `Stage` identifica la carpeta de la etapa. Usá un `workshop_name` único por ensayo.
 Los recursos que no admiten tags y los creados internamente por AWS necesitan

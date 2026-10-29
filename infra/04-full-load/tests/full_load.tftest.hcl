@@ -14,7 +14,10 @@ override_data {
   }
 }
 
-variables { expected_account_id = "123456789012" }
+variables {
+  expected_account_id = "123456789012"
+  workshop_name       = "utn-dms"
+}
 
 run "full_load_waits_for_manual_start" {
   command = plan
@@ -30,10 +33,10 @@ run "full_load_waits_for_manual_start" {
   }
   assert {
     condition = (
-      length(jsondecode(aws_dms_replication_task.full_load.table_mappings).rules) == 4 &&
-      toset([for rule in jsondecode(aws_dms_replication_task.full_load.table_mappings).rules : rule.object-locator.table-name]) == toset(["clientes", "productos", "pedidos", "items_pedido"]) &&
+      length(jsondecode(aws_dms_replication_task.full_load.table_mappings).rules) == 5 &&
+      toset([for rule in jsondecode(aws_dms_replication_task.full_load.table_mappings).rules : rule.object-locator.table-name if rule.rule-type == "selection"]) == toset(["clientes", "productos", "pedidos", "items_pedido"]) &&
       alltrue([for rule in jsondecode(aws_dms_replication_task.full_load.table_mappings).rules :
-        rule.rule-type == "selection" && rule.rule-action == "explicit" && rule.object-locator.schema-name == "tienda"
+        rule.rule-action == "explicit" && rule.object-locator.schema-name == "tienda" if rule.rule-type == "selection"
       ])
     )
     error_message = "Solo deben seleccionarse las cuatro tablas, con nombres exactos y sin expansión de comodines."

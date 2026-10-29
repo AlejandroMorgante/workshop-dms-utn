@@ -1,6 +1,9 @@
 mock_provider "aws" {}
 
-variables { expected_account_id = "123456789012" }
+variables {
+  workshop_name       = "utn-dms"
+  expected_account_id = "123456789012"
+}
 
 run "private_versioned_destination" {
   # Apply against the mock provider only; no AWS calls are made.

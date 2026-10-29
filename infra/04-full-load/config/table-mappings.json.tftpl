@@ -39,6 +39,17 @@
         "table-name": "items_pedido"
       },
       "rule-action": "explicit"
+    },
+    {
+      "rule-type": "transformation",
+      "rule-id": "10",
+      "rule-name": "10",
+      "rule-target": "schema",
+      "object-locator": {
+        "schema-name": "tienda"
+      },
+      "rule-action": "rename",
+      "value": "${catalog_name}"
     }
   ]
 }

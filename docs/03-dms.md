@@ -302,3 +302,16 @@ y la generación del catálogo; ver [el informe](ensayo-end-to-end.md).
 - [S3 y Glue Data Catalog](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.S3.html).
 - [VPC endpoints para DMS](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_VPC_Endpoints.html).
 - [Credenciales de login en SDKs](https://docs.aws.amazon.com/sdkref/latest/guide/feature-login-credentials.html).
+
+## Cierre del recorrido completo
+
+Si también desplegaste full load, CDC o Athena, usá [07 · Limpieza](07-limpieza.md)
+para eliminar los seis stacks en orden y verificar recursos generados. Las
+instrucciones de limpieza de esta etapa sirven para un recorrido parcial.
+
+## Ritmo de la clase
+
+La instancia de replicación también tarda varios minutos en crearse. Mientras
+Terraform espera, revisá los roles, el acceso privado a los servicios y la
+diferencia entre instancia, endpoint y task. No interrumpas el apply por no ver
+archivos en S3: todavía no se ejecutó una replicación.
