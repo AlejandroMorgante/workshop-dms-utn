@@ -3,7 +3,7 @@
 Creamos una task **full load** con Terraform y la arrancamos desde AWS CLI durante
 el workshop. El resultado esperado son los datos iniciales en Parquet y sus
 metadatos en Glue Data Catalog. La explicación para clase está en
-[la web](https://utn.almorgan.dev/etapa-04-full-load.html).
+[la web](https://utn.almorgan.dev/workshop/#etapa-04).
 
 Esta etapa reutiliza la instancia y los endpoints de la etapa 03. No crea otra
 instancia DMS, otro bucket ni un crawler. La task se crea detenida: **crear no es

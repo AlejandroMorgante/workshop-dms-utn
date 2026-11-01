@@ -140,3 +140,10 @@ completa. Los roles de cuenta reutilizados conservan sus tags y su propietario.
 El secreto dedicado usa la clave administrada `aws/secretsmanager` y se destruye
 sin recuperación. Este comportamiento está pensado para datos descartables del
 workshop. No se crea una clave KMS propia con borrado diferido.
+
+## Licencia
+
+El código, la documentación y la configuración originales de este repositorio
+se distribuyen bajo la licencia MIT. El certificado público de Amazon RDS en
+`infra/03-dms/certs/us-east-1-bundle.pem` y las marcas de AWS pertenecen a sus
+respectivos titulares y no se relicencian mediante esta licencia.

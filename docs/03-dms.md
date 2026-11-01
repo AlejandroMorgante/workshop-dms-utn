@@ -3,7 +3,7 @@
 Esta etapa termina con una instancia de replicación y dos conexiones probadas.
 Dejamos preparada la generación automática de Glue Data Catalog; las tareas y
 los primeros datos llegan en la [etapa 04](04-full-load.md). La explicación para clase está en
-[la web](https://utn.almorgan.dev/etapa-03-dms.html).
+[la web](https://utn.almorgan.dev/workshop/#etapa-03).
 
 ## Las piezas
 

@@ -27,5 +27,9 @@ crash.*.log
 __pycache__/
 *.pyc
 
+# Local presentation work is maintained separately from the workshop repo.
+/assets/
+/presentacion-caso-de-uso.html
+
 # Public RDS trust store, not a private key.
 !infra/03-dms/certs/us-east-1-bundle.pem
