@@ -13,10 +13,10 @@ AWS Glue Data Catalog y consultas con Amazon Athena.
 - Para la etapa 03: Python 3.10 o posterior. La preparación en la web incluye
   su instalación; el asistente usa boto3 dentro de un entorno virtual local.
 
-La guía de preparación está publicada en **https://utn.almorgan.dev**.
-Allí están las instrucciones de instalación,
-autenticación y resolución de problemas. Este repositorio contiene el laboratorio;
-no duplica el setup.
+La [guía de preparación](https://utn.almorgan.dev) cubre instalación,
+autenticación y resolución de problemas. El [recorrido del workshop](https://utn.almorgan.dev/workshop/)
+describe las etapas y lo que vamos a crear en cada una. Este repositorio contiene
+el laboratorio; no duplica el setup.
 
 ## Punto de partida
 
