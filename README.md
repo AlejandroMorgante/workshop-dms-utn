@@ -6,6 +6,24 @@ CDC, Parquet, Glue Data Catalog y consultas con Athena.
 [Ver el recorrido del workshop](https://utn.almorgan.dev/workshop/) ·
 [Preparar la cuenta y las herramientas](https://utn.almorgan.dev/)
 
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/assets/icons/aurora.svg" width="64" alt="Amazon Aurora"><br><strong>Aurora PostgreSQL</strong></td>
+    <td align="center">→</td>
+    <td align="center"><img src="docs/assets/icons/dms.svg" width="64" alt="AWS DMS"><br><strong>AWS DMS</strong></td>
+    <td align="center">→</td>
+    <td align="center"><img src="docs/assets/icons/s3.svg" width="64" alt="Amazon S3"><br><strong>Amazon S3</strong></td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center">DMS registra las tablas en el catálogo de Glue; Athena consulta los datos de S3 usando ese catálogo.</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="docs/assets/icons/glue.svg" width="64" alt="AWS Glue Data Catalog"><br><strong>Glue Data Catalog</strong></td>
+    <td align="center">→</td>
+    <td colspan="2" align="center"><img src="docs/assets/icons/athena.svg" width="64" alt="Amazon Athena"><br><strong>Amazon Athena</strong></td>
+  </tr>
+</table>
+
 ## Requisitos
 
 - Cuenta AWS dedicada al laboratorio, con créditos activos e identidad con MFA.
@@ -47,5 +65,6 @@ para los comandos de Terraform y Python. El ensayo end-to-end está documentado 
 ## Licencia
 
 El código, la documentación y la configuración originales se distribuyen bajo
-la licencia [MIT](LICENSE). El certificado público de Amazon RDS y las marcas de
-AWS pertenecen a sus respectivos titulares y no se relicencian aquí.
+la licencia [MIT](LICENSE). Los iconos y marcas de AWS, y el certificado
+público de Amazon RDS, pertenecen a sus respectivos titulares y no se
+relicencian aquí.
